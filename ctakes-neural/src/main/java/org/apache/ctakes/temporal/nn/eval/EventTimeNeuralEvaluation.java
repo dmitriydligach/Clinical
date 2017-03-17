@@ -44,6 +44,7 @@ import org.apache.ctakes.temporal.eval.THYMEData;
 import org.apache.ctakes.temporal.keras.KerasStringOutcomeDataWriter;
 import org.apache.ctakes.temporal.keras.ScriptStringFeatureDataWriter;
 import org.apache.ctakes.temporal.nn.ae.EventTimePositionBasedAnnotator;
+import org.apache.ctakes.temporal.nn.ae.EventTimeTokenBasedAnnotator;
 import org.apache.ctakes.temporal.utils.AnnotationIdCollection;
 import org.apache.ctakes.temporal.utils.TLinkTypeArray2;
 import org.apache.ctakes.typesystem.type.relation.BinaryTextRelation;
@@ -87,8 +88,7 @@ import com.google.common.collect.Sets;
 import com.lexicalscope.jewel.cli.CliFactory;
 import com.lexicalscope.jewel.cli.Option;
 
-public class EventTimeNeuralEvaluation extends
-EvaluationOfTemporalRelations_ImplBase{
+public class EventTimeNeuralEvaluation extends EvaluationOfTemporalRelations_ImplBase{
   static interface TempRelOptions extends Evaluation_ImplBase.Options{
     @Option
     public boolean getPrintFormattedRelations();
@@ -290,7 +290,7 @@ EvaluationOfTemporalRelations_ImplBase{
       aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(Overlap2Contains.class));
 
       aggregateBuilder.add(
-          AnalysisEngineFactory.createEngineDescription(EventTimePositionBasedAnnotator.class,
+          AnalysisEngineFactory.createEngineDescription(EventTimeTokenBasedAnnotator.class,
               CleartkAnnotator.PARAM_IS_TRAINING,
               true,
               DefaultDataWriterFactory.PARAM_DATA_WRITER_CLASS_NAME,
@@ -298,20 +298,20 @@ EvaluationOfTemporalRelations_ImplBase{
               DirectoryDataWriterFactory.PARAM_OUTPUT_DIRECTORY,
               new File(directory,"event-time"),
               ScriptStringFeatureDataWriter.PARAM_SCRIPT_DIR,
-              "scripts/nn/"
-              ) );
+              "scripts/"
+              ));
 
       SimplePipeline.runPipeline(collectionReader, aggregateBuilder.createAggregate());
     }
     
-    JarClassifierBuilder.trainAndPackage(new File(directory,"event-time"));//, weightArray
+    JarClassifierBuilder.trainAndPackage(new File(directory,"event-time"));
   }
 
   @Override
   protected AnnotationStatistics<String> test(CollectionReader collectionReader, File directory)
       throws Exception {
     
-    this.useClosure=false;//don't do closure for test
+    this.useClosure = false; // don't do closure for test
     AggregateBuilder aggregateBuilder = this.getPreprocessorAggregateBuilder();
     aggregateBuilder.add(CopyFromGold.getDescription(EventMention.class, TimeMention.class));
 
@@ -322,7 +322,7 @@ EvaluationOfTemporalRelations_ImplBase{
         RemoveCrossSentenceRelations.PARAM_RELATION_VIEW,
         GOLD_VIEW_NAME));
 
-    if (!recallModeEvaluation && this.useClosure) { //closure for gold
+    if (!recallModeEvaluation && this.useClosure) { // closure for gold
       aggregateBuilder.add(
           AnalysisEngineFactory.createEngineDescription(AddClosure.class),
           CAS.NAME_DEFAULT_SOFA,
@@ -337,11 +337,12 @@ EvaluationOfTemporalRelations_ImplBase{
     aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(RemoveNonContainsRelations.class),
         CAS.NAME_DEFAULT_SOFA,
         GOLD_VIEW_NAME);
+    
     //		aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(RemoveNonUMLSEtEvents.class));
 
     aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(RemoveRelations.class));
     aggregateBuilder.add(this.baseline ? RecallBaselineEventTimeRelationAnnotator.createAnnotatorDescription(directory) :
-      AnalysisEngineFactory.createEngineDescription(EventTimePositionBasedAnnotator.class,
+      AnalysisEngineFactory.createEngineDescription(EventTimeTokenBasedAnnotator.class,
           CleartkAnnotator.PARAM_IS_TRAINING,
           false,
           GenericJarClassifierFactory.PARAM_CLASSIFIER_JAR_PATH,

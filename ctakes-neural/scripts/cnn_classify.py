@@ -14,8 +14,9 @@ def main(args):
         sys.exit(-1)
     working_dir = args[0]
 
-    target_dir = 'ctakes-temporal/target/eval/thyme/train_and_test/event-event/'
-    model_dir = os.path.join(os.environ['CTAKES_ROOT'], target_dir)
+    target_dir = 'ctakes-neural/target/eval/thyme/train_and_test/event-time/'
+    model_dir = '/Users/Dima/Git/Clinical/ctakes-neural/target/eval/thyme/train_and_test/event-time/'
+    # model_dir = os.path.join(os.environ['CTAKES_ROOT'], target_dir)
     maxlen   = pickle.load(open(os.path.join(model_dir, "maxlen.p"), "rb"))
     word2int = pickle.load(open(os.path.join(model_dir, "word2int.p"), "rb"))
     label2int = pickle.load(open(os.path.join(model_dir, "label2int.p"), "rb"))
@@ -39,7 +40,7 @@ def main(args):
                 else:
                     # TODO: 'none' is not in vocabulary!
                     feats.append(word2int['none'])
-                    
+
             if len(feats) > maxlen:
                 feats=feats[0:maxlen]
             test_x = pad_sequences([feats], maxlen=maxlen)

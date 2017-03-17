@@ -31,7 +31,6 @@ public class EventTimeTokenBasedAnnotator extends CleartkAnnotator<String> {
   public static final String NO_RELATION_CATEGORY = "none";
 
   public EventTimeTokenBasedAnnotator() {
-    // TODO Auto-generated constructor stub
   }
 
   @Override
@@ -79,7 +78,7 @@ public class EventTimeTokenBasedAnnotator extends CleartkAnnotator<String> {
 
         // derive features based on context
         List<Feature> features = new ArrayList<>();
-        String[] tokens = context.split(" ");
+        String [] tokens = context.split(" ");
         for(String token: tokens){
           features.add(new Feature(token.toLowerCase()));
         }
